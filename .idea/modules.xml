@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ECG decryptor.iml" filepath="$PROJECT_DIR$/.idea/ECG decryptor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/ECG_decryptor.iml" filepath="$PROJECT_DIR$/.idea/ECG_decryptor.iml" />
     </modules>
   </component>
 </project>
