@@ -2,13 +2,11 @@ import sys
 import os
 from datetime import date
 
-
 mode_dict = {1: "Домодедово",
              2: "Домодедово (с нагрузкой)",
              3: "Сходненская",
              4: "Третьяковская"
              }
-
 
 def resource_path(relative_path: str) -> str:
     if hasattr(sys, '_MEIPASS'):
@@ -32,7 +30,7 @@ def get_mode():
 def collect_data():
     # Collecting data
     name = input("Ф.И.О.: ")
-    bdr = input("Дата рождения (ДД.ММ.ГГГГ): ").replace(",", ".")
+    bdr = input("Дата рождения (ДД.ММ.ГГГГ): ").replace(",", ".").replace("/", ".")
     pulse = int(input("ЧСС: "))
     alpha = input("α: ")
     P = input("P: 0,")
@@ -71,5 +69,4 @@ def collect_data():
         "TG": f"{TG}",
         "n": name
     }
-
     return replacements
