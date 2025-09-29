@@ -1,2 +1,6 @@
 /.venv/
 .gitignore
+/dist/
+/main.spec
+/build/
+/output/
