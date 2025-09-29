@@ -1,3 +1,5 @@
+from fileinput import filename
+
 from docx import Document
 from my_functions import *
 
@@ -16,6 +18,7 @@ while True:
                     if r.text == key:
                         r.text = r.text.replace(r.text, val)
 
+    fnm = f"./output/ЭКГ {mode_dict[mode]} {repl["n"]}.docx"
+    doc.save(fnm)
 
-    doc.save(f"./output/ЭКГ {mode_dict[mode]} {repl["n"]} .docx")
-
+    print(f"Успешно сохранено в {fnm}\n{"-"*20}\n")
