@@ -1,7 +1,6 @@
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="docxcompose.properties")
 
-from docxtpl import DocxTemplate
 import sys
 import os
 from datetime import date, datetime

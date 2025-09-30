@@ -1,4 +1,5 @@
 from functions import *
+from docxtpl import DocxTemplate
 
 if __name__ == "__main__":
     os.makedirs("output", exist_ok=True)
@@ -7,7 +8,7 @@ if __name__ == "__main__":
         result = get_info(modef)
         docname = f"./output/ЭКГ {mode_dict[modef]} {result[0]["name"]}.docx"
 
-        doc = DocxTemplate("template.docx")
+        doc = DocxTemplate(resource_path("template.docx"))
         doc.render(result[0])
         doc.save(docname)
 
