@@ -6,42 +6,12 @@ import os
 from datetime import date, datetime
 
 
-
-
-
-mode_dict = {1: "Домодедово",
+mode_dict = {0: "Выйти",
+             1: "Домодедово",
              2: "Домодедово (с нагрузкой)",
              3: "Сходненская",
              4: "Третьяковская"
              }
-
-def fufill(value):
-    v = str(value)
-    if "." in v:
-        v1 = v[2:]
-        l = len(v1)
-        if l < 2:
-            v += "0"
-        return v.replace(".", ",")
-    else:
-        return f"0,{value}"
-
-def resource_path(relative_path: str) -> str:
-    if hasattr(sys, '_MEIPASS'):
-        # noinspection PyProtectedMember
-        base_path = sys._MEIPASS
-    else:
-        base_path = os.path.abspath(".")
-    return os.path.join(base_path, relative_path)
-
-def getnum(message, minval=0, maxval=1000):
-    while True:
-        n = input(message)
-        if n.isdecimal():
-            n = int(n)
-            if minval <= n <= maxval:
-                return int(n)
-        print("Неверный ввод, попробуйте снова.")
 
 def is_valid_date(date_str: str) -> bool:
     try:
@@ -50,43 +20,75 @@ def is_valid_date(date_str: str) -> bool:
     except ValueError:
         return False
 
-def getdate(message) -> date:
+def getfloat(response, maxlen=2):
+    if response.isdecimal() and len(response) <= maxlen:
+        return float(f"0.{response}")
+    else:
+        return False
+
+def getint(response, minval=0, maxval=float("inf")):
+    if response.isdecimal() and minval <= int(response) <= maxval:
+        return int(response)
+    else:
+        return False
+
+def is_valid_date(date_str: str) -> bool:
+    try:
+        datetime.strptime(date_str, "%d.%m.%Y")
+        return True
+    except ValueError:
+        return False
+
+def getdate(response):
+    dt = response.replace(",", ".").replace("/", ".")
+    if is_valid_date(dt):
+        return datetime.strptime(dt, "%d.%m.%Y").date()
+    else:
+        return False
+
+def safe_input(message, meth, **kwargs):
     while True:
-        dt = input(message).replace(",", ".").replace("/", ".")
-        if is_valid_date(dt):
-            return datetime.strptime(dt, "%d.%m.%Y").date()
+        response = input(message)
+        res = meth(response, **kwargs)
+        if type(res) != bool:
+            return res
         else:
             print("Неверный ввод, попробуйте снова.")
+
+def resource_path(relative_path: str) -> str:
+    if hasattr(sys, '_MEIPASS'):
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 def choose_mode():
     rl = ""
     for k, v in mode_dict.items():
         rl += f"{k} - {v}\n"
-    print(rl[0:-1])
-    m = getnum("Выберите режим: ", minval=1, maxval=4)
+    rl += "Выберите режим: "
+    m = safe_input(rl, getint, maxval=4)
     return m
+
+def precise(value:float, rounding:int=2) -> str:
+    return f"{value:.{rounding}f}".replace(".", ",")
 
 def get_info(mode):
     name = input("Ф.И.О.: ")
-    birthday = getdate("Дата рождения (ДД.ММ.ГГГГ): ")
-    pulse = getnum("ЧСС: ")
-    alpha = getnum("α: ")
-    P = fufill(getnum("P: 0,", maxval=99))
-    PQ = fufill(getnum("PQ: 0,", maxval=99))
-    QRS = fufill(getnum("QRS: 0,", maxval=99))
-    QT = float(f"0.{getnum("QT: 0,", maxval=99)}")
-    P23avf = input("P II,III,avf: ")
-    T23avf = input("T II,III,avf: ")
-
-
+    birthday = safe_input("Дата рождения (ДД.ММ.ГГГГ): ", getdate)
+    pulse = safe_input("ЧСС: ", getint)
+    alpha = safe_input("α: ", getint)
+    P = safe_input("P: 0,", getfloat)
+    PQ = safe_input("PQ: 0,", getfloat)
+    QRS = safe_input("QRS: 0,", getfloat)
+    QT = safe_input("QT: 0,", getfloat)
+    P23avf = input("P II,III,avf: ") or "+"
+    T23avf = input("T II,III,avf: ") or "+"
 
     todate = date.today()
     age = int((todate - birthday).days / 365.25)
 
-    QTc = round(QT / (60 / pulse)**0.5, 2)
-
-    if P23avf == "": P23avf = "+"
-    if T23avf == "": T23avf = "+"
+    QTc = QT / (60 / pulse)**0.5
 
     context = {
         "date": todate.strftime("%d.%m.%Y"),
@@ -95,11 +97,11 @@ def get_info(mode):
         "birthday": birthday.strftime("%d.%m.%Y"),
         "pulse": pulse,
         "alpha": alpha,
-        "P": P,
-        "PQ": PQ,
-        "QRS": QRS,
-        "QT": fufill(QT),
-        "QTc": fufill(QTc),
+        "P": precise(P),
+        "PQ": precise(PQ),
+        "QRS": precise(QRS),
+        "QT": precise(QT),
+        "QTc": precise(QTc),
         "P23avf": P23avf,
         "T23avf": T23avf,
         "company": "ООО «ГОЛД ТЕСТ»",
@@ -123,4 +125,4 @@ def get_info(mode):
         context["license"] = "Лицензия № : ЛО-77-01-015456 от 09.01.2018 г"
         context["tel_num"] = "8(495)953-89-48"
 
-    return context, name
+    return context
