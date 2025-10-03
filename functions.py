@@ -26,6 +26,13 @@ def getfloat(response, maxlen=2):
     else:
         return False
 
+def getstr(response:str, awaitedset:set={"+", "-"}):
+    if set(response) <= awaitedset:
+        print(response)
+        return response
+    else:
+        return False
+
 def getint(response, minval=0, maxval=float("inf")):
     if response.isdecimal() and minval <= int(response) <= maxval:
         return int(response)
@@ -55,7 +62,7 @@ def safe_input(message, meth, **kwargs):
         else:
             print("Неверный ввод, попробуйте снова.")
 
-def resource_path(relative_path: str) -> str:
+def resource_path(relative_path:str) -> str:
     if hasattr(sys, '_MEIPASS'):
         base_path = sys._MEIPASS
     else:
@@ -82,8 +89,8 @@ def get_info(mode):
     PQ = safe_input("PQ: 0,", getfloat)
     QRS = safe_input("QRS: 0,", getfloat)
     QT = safe_input("QT: 0,", getfloat)
-    P23avf = input("P II,III,avf: ") or "+"
-    T23avf = input("T II,III,avf: ") or "+"
+    P23avf = safe_input("P II,III,avf: ", getstr) or "+"
+    T23avf = safe_input("T II,III,avf: ", getstr) or "+"
 
     todate = date.today()
     age = int((todate - birthday).days / 365.25)
