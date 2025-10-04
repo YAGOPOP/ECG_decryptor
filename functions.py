@@ -19,6 +19,12 @@ def is_valid_date(date_str: str) -> bool:
         return True
     except ValueError:
         return False
+def is_valid_number(num:str) -> bool:
+    try:
+        int(num.strip())
+        return True
+    except ValueError:
+        return False
 
 def getfloat(response, maxlen=2):
     if response.isdecimal() and len(response) <= maxlen:
@@ -28,13 +34,12 @@ def getfloat(response, maxlen=2):
 
 def getstr(response:str, awaitedset:set={"+", "-"}):
     if set(response) <= awaitedset:
-        print(response)
         return response
     else:
         return False
 
 def getint(response, minval=0, maxval=float("inf")):
-    if response.isdecimal() and minval <= int(response) <= maxval:
+    if is_valid_number(response) and minval <= int(response) <= maxval:
         return int(response)
     else:
         return False
@@ -84,7 +89,7 @@ def get_info(mode):
     name = input("Ф.И.О.: ")
     birthday = safe_input("Дата рождения (ДД.ММ.ГГГГ): ", getdate)
     pulse = safe_input("ЧСС: ", getint)
-    alpha = safe_input("α: ", getint)
+    alpha = safe_input("α: ", getint, minval=float("-inf"))
     P = safe_input("P: 0,", getfloat)
     PQ = safe_input("PQ: 0,", getfloat)
     QRS = safe_input("QRS: 0,", getfloat)
