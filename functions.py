@@ -4,6 +4,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="docxcompose.prop
 import sys
 import os
 from datetime import date, datetime
+from statistics import mean
 
 
 mode_dict = {0: "Выйти",
@@ -29,34 +30,35 @@ def is_valid_number(num:str) -> bool:
 def getfloat(response, maxlen=2):
     if response.isdecimal() and len(response) <= maxlen:
         return float(f"0.{response}")
-    else:
-        return False
+    return False
 
 def getstr(response:str, awaitedset:set={"+", "-"}):
     if set(response) <= awaitedset:
         return response
-    else:
-        return False
+    return False
 
 def getint(response, minval=0, maxval=float("inf")):
     if is_valid_number(response) and minval <= int(response) <= maxval:
         return int(response)
-    else:
-        return False
+    return False
 
-def is_valid_date(date_str: str) -> bool:
-    try:
-        datetime.strptime(date_str, "%d.%m.%Y")
-        return True
-    except ValueError:
-        return False
+def getsegment(response:str, minval=0):
+    if response.count("-") == 1:
+        rl, rr = response.split("-")
+        if is_valid_number(rl) and is_valid_number(rr):
+            rl = int(rl)
+            rr = int(rr)
+            if rl < rr:
+                return rl, rr
+    else:
+        return getint(response)
+    return False
 
 def getdate(response):
     dt = response.replace(",", ".").replace("/", ".")
     if is_valid_date(dt):
         return datetime.strptime(dt, "%d.%m.%Y").date()
-    else:
-        return False
+    return False
 
 def safe_input(message, meth, **kwargs):
     while True:
@@ -64,8 +66,7 @@ def safe_input(message, meth, **kwargs):
         res = meth(response, **kwargs)
         if type(res) != bool:
             return res
-        else:
-            print("Неверный ввод, попробуйте снова.")
+        print("Неверный ввод, попробуйте снова.")
 
 def resource_path(relative_path:str) -> str:
     if hasattr(sys, '_MEIPASS'):
@@ -85,10 +86,16 @@ def choose_mode():
 def precise(value:float, rounding:int=2) -> str:
     return f"{value:.{rounding}f}".replace(".", ",")
 
+def delistize(l):
+    if type(l) == tuple:
+        return f"{l[0]}-{l[-1]}"
+    else:
+        return l
+
 def get_info(mode):
     name = input("Ф.И.О.: ")
     birthday = safe_input("Дата рождения (ДД.ММ.ГГГГ): ", getdate)
-    pulse = safe_input("ЧСС: ", getint)
+    pulse = safe_input("ЧСС: ", getsegment)
     alpha = safe_input("α: ", getint, minval=float("-inf"))
     P = safe_input("P: 0,", getfloat)
     PQ = safe_input("PQ: 0,", getfloat)
@@ -100,14 +107,18 @@ def get_info(mode):
     todate = date.today()
     age = int((todate - birthday).days / 365.25)
 
-    QTc = QT / (60 / pulse)**0.5
+    if type(pulse) == tuple:
+        QTc = QT / (60 / mean(pulse))**0.5
+    else:
+        QTc = QT / (60 / pulse)**0.5
+
 
     context = {
         "date": todate.strftime("%d.%m.%Y"),
         "name": name,
         "age": age,
         "birthday": birthday.strftime("%d.%m.%Y"),
-        "pulse": pulse,
+        "pulse": delistize(pulse),
         "alpha": alpha,
         "P": precise(P),
         "PQ": precise(PQ),
